@@ -19,6 +19,28 @@ fn main() {
 
     let f: fn(i32) -> i32 = add_one;
     print_number(f(3));
+
+    let v1 = vec![1, 2, 3];
+    let v2 = v1;
+    // println!("v1[0] is: {}", v1[0]);
+
+    let v = first(&v2);
+    println!("v2[0] is: {}", v);
+
+    let mut x = 5;
+    {
+        let y = &mut x;
+        *y += 1;
+    }
+    println!("{}", x);  //=> 6
+
+    let mut a = 1;
+    let b = &mut a;
+    // let c = &mut a;
+
+    let q = 3;
+    let p: &i32;  // 逆だとエラー
+    p = &q;
 }
 
 fn print_number(x: i32) {
@@ -35,4 +57,8 @@ fn add_one(x: i32) -> i32 {
 
 fn diverges() -> ! {
     panic!("Never returns!");
+}
+
+fn first(v: &Vec<i32>) -> i32 {
+    v[0]
 }
