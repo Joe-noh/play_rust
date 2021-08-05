@@ -1,4 +1,5 @@
 use std::io::BufRead;
+use anyhow::{bail, Result, Context};
 
 pub fn calc<R: BufRead>(reader: R) {
     let rpn = Rpn::new();
@@ -6,7 +7,10 @@ pub fn calc<R: BufRead>(reader: R) {
     for line in reader.lines() {
         let formula = line.unwrap();
 
-        println!("{}", rpn.eval(&formula));
+        match rpn.eval(&formula) {
+            Ok(result) => println!("{}", result),
+            Err(error) => println!("{}", error),
+        }
     }
 }
 
@@ -17,31 +21,34 @@ impl Rpn {
         Self()
     }
 
-    fn eval(&self, formula: &str) -> i32 {
+    fn eval(&self, formula: &str) -> Result<i32> {
         let mut tokens = formula.split_whitespace().rev().collect::<Vec<_>>();
         let mut stack = Vec::new();
+        let mut pos = 0;
 
         while let Some(token) = tokens.pop() {
+            pos += 1;
+
             if let Ok(n) = token.parse::<i32>() {
                 stack.push(n)
             } else {
-                let y = stack.pop().expect("invalid formula");
-                let x = stack.pop().expect("invalid formula");
+                let y = stack.pop().with_context(|| format!("Syntax error at {}", pos))?;
+                let x = stack.pop().with_context(|| format!("Syntax error at {}", pos))?;
 
                 match token {
                     "+" => stack.push(x + y),
                     "-" => stack.push(x - y),
                     "*" => stack.push(x * y),
                     "/" => stack.push(x / y),
-                    _ => panic!()
+                    _ => bail!("Invalid token '{}' at {}", token, pos),
                 }
             }
         }
 
         if stack.len() == 1 {
-            stack[0]
+            Ok(stack[0])
         } else {
-            panic!()
+            bail!("Syntax error")
         }
     }
 }
@@ -50,17 +57,18 @@ impl Rpn {
 fn test_ok() {
     let rpn = Rpn::new();
 
-    assert_eq!(rpn.eval("1 1 +"), 2);
-    assert_eq!(rpn.eval("4 1 -"), 3);
-    assert_eq!(rpn.eval("2 3 *"), 6);
-    assert_eq!(rpn.eval("4 2 /"), 2);
-    assert_eq!(rpn.eval("3 5 + 2 / 6 * 5 -"), 19);
+    assert_eq!(rpn.eval("1 1 +").unwrap(), 2);
+    assert_eq!(rpn.eval("4 1 -").unwrap(), 3);
+    assert_eq!(rpn.eval("2 3 *").unwrap(), 6);
+    assert_eq!(rpn.eval("4 2 /").unwrap(), 2);
+    assert_eq!(rpn.eval("3 5 + 2 / 6 * 5 -").unwrap(), 19);
 }
 
 #[test]
-#[should_panic]
 fn test_error() {
     let rpn = Rpn::new();
 
-    rpn.eval("1 1 1");
+    assert!(rpn.eval("1 1 1").is_err());
+    assert!(rpn.eval("1 & 1").is_err());
+    assert!(rpn.eval("").is_err());
 }
