@@ -1,9 +1,14 @@
+mod file_store;
+
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
+#[derive(Serialize, Deserialize)]
 pub struct TodoList {
     todos: Vec<Todo>,
 }
 
+#[derive(Serialize, Deserialize)]
 struct Todo {
     done: bool,
     body: String,
