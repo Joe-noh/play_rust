@@ -1,4 +1,7 @@
+mod todo_list;
+
 use clap::{App, Arg, SubCommand};
+use todo_list::TodoList;
 
 fn main() {
     let matches = App::new("todo")
@@ -30,20 +33,30 @@ fn main() {
 
     match matches.subcommand_name() {
         Some("list") => {
-            dbg!("list");
+            let list = TodoList::load().unwrap();
+
+            println!("{}", list);
         }
         Some("add") => {
             let matches = matches.subcommand_matches("add").unwrap();
+            let body = matches.value_of("TODO").unwrap();
+            let mut list = TodoList::load().unwrap();
 
-            dbg!(matches.value_of("TODO").unwrap());
+            list.add(body);
+            list.save().unwrap();
         }
         Some("remove") => {
             let matches = matches.subcommand_matches("remove").unwrap();
+            let mut list = TodoList::load().unwrap();
 
             if matches.is_present("all") {
-                dbg!("all!");
+                list.remove_all();
+                list.save().unwrap();
             } else if let Some(ids) = matches.values_of("id") {
-                dbg!(ids);
+                let ids = ids.map(|id| id.parse().unwrap()).collect();
+
+                list.remove(ids);
+                list.save().unwrap();
             }
         }
         Some(_) => panic!(),

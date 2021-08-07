@@ -1,7 +1,9 @@
 mod file_store;
 
 use serde::{Deserialize, Serialize};
+use std::error::Error;
 use std::fmt;
+use std::path::Path;
 
 #[derive(Serialize, Deserialize)]
 pub struct TodoList {
@@ -17,6 +19,14 @@ struct Todo {
 impl TodoList {
     pub fn new() -> TodoList {
         TodoList { todos: Vec::new() }
+    }
+
+    pub fn load() -> Result<TodoList, Box<dyn Error>> {
+        file_store::load(Path::new("./todos.json"))
+    }
+
+    pub fn save(&self) -> Result<(), Box<dyn Error>> {
+        file_store::save(Path::new("./todos.json"), self)
     }
 
     pub fn add(&mut self, body: &str) {

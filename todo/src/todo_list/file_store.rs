@@ -6,7 +6,7 @@ use std::path::Path;
 
 use super::TodoList;
 
-fn load(path: &Path) -> Result<TodoList, Box<dyn Error>> {
+pub fn load(path: &Path) -> Result<TodoList, Box<dyn Error>> {
     if Path::new(path).exists() {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
@@ -23,7 +23,7 @@ fn load(path: &Path) -> Result<TodoList, Box<dyn Error>> {
     }
 }
 
-fn save(path: &Path, todo_list: TodoList) -> Result<(), Box<dyn Error>> {
+pub fn save(path: &Path, todo_list: &TodoList) -> Result<(), Box<dyn Error>> {
     let mut file = OpenOptions::new().write(true).create(true).open(path)?;
     let json = serde_json::to_string(&todo_list)?;
 
@@ -52,7 +52,7 @@ fn test_load_file_exists() {
 
     todo_list.add("Buy some more milk");
 
-    save(file.path(), todo_list)
+    save(file.path(), &todo_list)
         .and_then(|_r| {
             let loaded = load(file.path()).unwrap();
 
