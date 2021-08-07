@@ -29,6 +29,17 @@ fn main() {
                         .conflicts_with("id"),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("toggle")
+                .about("Toggle todo status")
+                .arg(
+                    Arg::with_name("id")
+                        .long("id")
+                        .short("i")
+                        .takes_value(true)
+                        .multiple(true),
+                ),
+        )
         .get_matches();
 
     match matches.subcommand_name() {
@@ -56,6 +67,17 @@ fn main() {
                 let ids = ids.map(|id| id.parse().unwrap()).collect();
 
                 list.remove(ids);
+                list.save().unwrap();
+            }
+        }
+        Some("toggle") => {
+            let matches = matches.subcommand_matches("toggle").unwrap();
+            let mut list = TodoList::load().unwrap();
+
+            if let Some(ids) = matches.values_of("id") {
+                let ids = ids.map(|id| id.parse().unwrap()).collect();
+
+                list.toggle(ids);
                 list.save().unwrap();
             }
         }
