@@ -24,10 +24,14 @@ pub fn load(path: &Path) -> Result<TodoList, Box<dyn Error>> {
 }
 
 pub fn save(path: &Path, todo_list: &TodoList) -> Result<(), Box<dyn Error>> {
-    let mut file = OpenOptions::new().write(true).create(true).open(path)?;
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(path)?;
     let json = serde_json::to_string(&todo_list)?;
 
-    match write!(file, "{}", json) {
+    match writeln!(file, "{}", json) {
         Ok(_r) => Ok(()),
         Err(e) => Err(Box::new(e)),
     }
