@@ -50,14 +50,10 @@ impl TodoList {
     }
 
     pub fn toggle(&mut self, indices: Vec<i32>) {
-        let mut index = 0;
-
-        for todo in &mut self.todos {
-            if indices.contains(&index) {
+        for (index, todo) in self.todos.iter_mut().enumerate() {
+            if indices.contains(&(index as i32)) {
                 todo.done = !todo.done
             }
-
-            index += 1;
         }
     }
 }
