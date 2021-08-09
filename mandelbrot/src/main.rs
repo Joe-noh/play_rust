@@ -1,3 +1,6 @@
+mod mandelbrot;
+
 fn main() {
-    println!("Hello, world!");
+    let m = mandelbrot::Mandelbrot::generate(180, 40);
+    m.render();
 }
